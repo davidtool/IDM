@@ -1,22 +1,36 @@
 @echo off
-chcp 65001
-mode con: cols=80 lines=30
-color 0B
-title Đăng ký Internet Download Manager - DavidTool 0966 777 585
+color 03
+chcp 65001 >nul
+title Internet Download Manager - DavidTool 0966 777 585
 cls
+set "IDM=https://mirror2.internetdownloadmanager.com/idman642build27.exe"
+set "Fix=https://raw.githubusercontent.com/davidtool/IDM/refs/heads/main/IDMan.exe"
+set "Patchidm=%Temp%\IDM"
 
-echo ================================================================================
-echo                    ĐĂNG KÝ INTERNET DOWNLOAD MANAGER (IDM)
-echo ================================================================================
-echo.
+if not exist "%Patchidm%" (
+    mkdir "%Patchidm%"
+)
 
-curl -L "https://mirror2.internetdownloadmanager.com/idman642build27.exe" -o "idman642build27.exe"
-start /wait idman642build27.exe /silent /norestart
+::Tải xuống tệp cài đặt IDM
+echo Đang tải xuống tệp cài đặt IDM...
+curl -L "%IDM% -o "%Patchidm%\idman642build27.exe"
+curl -L "%Fix% -o "%Patchidm%\IDMan.exe"
 
+:: Cài đặt IDM im lặng
+echo Đang cài đặt IDM im lặng...
+start /wait idman642build27.exe /sAll
+
+ 
+:: Sao chép tệp batch vào thư mục cài đặt IDM
+    echo Đang sao chép tệp batch vào thư mục IDM...
+    xcopy /y "%Patchidm%\IDMan.exe" "%ProgramFiles(x86)%\Internet Download Manager\IDMan.exe"
+
+    echo Tệp batch đã được sao chép vào thư mục cài đặt IDM.
+) ELSE (
+    echo Cài đặt IDM không thành công. Quá trình dừng lại.
+)
 :: Dừng dịch vụ IDM
 net stop "IDM Integration Service"
-pause
-xcopy /y "%~dp0IDMan.exe" "%ProgramFiles(x86)%\Internet Download Manager"
 
 :: Xóa thông tin đăng ký cũ
 reg delete "HKEY_CURRENT_USER\Software\DownloadManager" /f
@@ -37,4 +51,5 @@ echo Đã đăng ký thành công Internet Download Manager!
 echo.
 echo Vui lòng khởi động lại IDM để áp dụng thay đổi.
 echo.
-pause
+del /f /q %Patchidm%
+timeout /t 5 >nul
